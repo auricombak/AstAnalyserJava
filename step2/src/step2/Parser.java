@@ -22,14 +22,16 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class Parser {
 	
-	public static final String projectPath = "/auto_home/lfaidherbe/eclipse-workspace/maps/";
+	public static final String projectPath = "/home/oguerisck/Documents/Refactoring/AstAnalyserJava/step2";
 	public static final String projectSourcePath = projectPath + "/src";
-	public static final String jrePath = "/usr/lib/jvm/java-8-oracle/jre/lib";
+	public static final String jrePath = "/usr/share/man/man1";
 
 	public static void main(String[] args) throws IOException {
 
 		// read java files
-		int nbClasses =0, nbMethodes = 0;
+		int nbClasses =0, 
+			nbMethodes = 0, 
+			nbLignes = 0;
 		final File folder = new File(projectSourcePath);
 		ArrayList<File> javaFiles = listJavaFilesForFolder(folder);
 
@@ -40,17 +42,24 @@ public class Parser {
 
 			CompilationUnit parse = parse(content.toCharArray());
 
-			System.out.println(content);
+			nbLignes += countLines(content);
 			
-			//print nb classes
+			//for each file visited, count the number of classes
 			nbClasses += NbClassesPerFile(parse);
 			
-			//print nb methodes
+			//for each file visited, count the number of methods
 			nbMethodes += NbMethodsPerFile(parse);
 
 		}
-		System.out.println("Il y a : " + nbClasses + " classes");
-		System.out.println("Il y a : " + nbMethodes + " méthodes");
+		
+		//print nb classes
+		System.out.println("Il y a : " + nbClasses + " Classes");
+		
+		//print nb methodes
+		System.out.println("Il y a : " + nbMethodes + " Méthodes");
+		
+		//print nb lines
+		System.out.println("Il y a : " + nbLignes + " Lignes");
 	}
 
 	// read all java files from specific folder
@@ -67,6 +76,16 @@ public class Parser {
 
 		return javaFiles;
 	}
+	
+	
+
+	//Count the number of line in a string
+	private static int countLines(String str){
+		String[] lines = str.split("\r\n|\r|\n");
+		return  lines.length;
+	}
+
+
 
 	// create AST
 	private static CompilationUnit parse(char[] classSource) {
