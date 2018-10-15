@@ -3,6 +3,7 @@ package step2;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -18,12 +19,17 @@ import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class Parser {
 	
+	//Give here the projectPath you want to analyse
 	public static final String projectPath = "/home/oguerisck/Documents/Refactoring/AstAnalyserJava/step2";
 	public static final String projectSourcePath = projectPath + "/src";
+	
+	//Give here the jre path, "whereis java" can help you
 	public static final String jrePath = "/usr/share/man/man1";
 
 	public static void main(String[] args) throws IOException {
@@ -32,13 +38,15 @@ public class Parser {
 		int nbClasses =0, 
 			nbMethodes = 0, 
 			nbLignes = 0;
+		HashSet<String> packages = new HashSet<>(); 
+		
 		final File folder = new File(projectSourcePath);
 		ArrayList<File> javaFiles = listJavaFilesForFolder(folder);
 
 		//
 		for (File fileEntry : javaFiles) {
 			String content = FileUtils.readFileToString(fileEntry);
-			// System.out.println(content);
+			//System.out.println(content + "@");
 
 			CompilationUnit parse = parse(content.toCharArray());
 
@@ -49,17 +57,23 @@ public class Parser {
 			
 			//for each file visited, count the number of methods
 			nbMethodes += NbMethodsPerFile(parse);
+			
+			String pack = printPackageInfo(parse);
+			packages.add(printPackageInfo(parse));
 
 		}
 		
 		//print nb classes
-		System.out.println("Il y a : " + nbClasses + " Classes");
+		System.out.println("Il y a : " + nbClasses + " Classe(s)");
 		
 		//print nb methodes
-		System.out.println("Il y a : " + nbMethodes + " Méthodes");
+		System.out.println("Il y a : " + nbMethodes + " Méthode(s)");
 		
 		//print nb lines
-		System.out.println("Il y a : " + nbLignes + " Lignes");
+		System.out.println("Il y a : " + nbLignes + " Ligne(s) de code");
+		
+		//print nb packages non vides
+		System.out.println("Il y a : " + packages.size()  + " Package(s)");
 	}
 
 	// read all java files from specific folder
@@ -139,6 +153,15 @@ public class Parser {
 					+ " Return type: " + method.getReturnType2());
 		}
 
+	}
+	
+	// navigate package information
+	public static String printPackageInfo(CompilationUnit parse) {
+		PackageNumberVisitor visitor = new PackageNumberVisitor();
+		parse.accept(visitor);
+
+		PackageDeclaration p = visitor.getPackage();
+		return p.getName().toString();
 	}
 
 	// navigate variables inside method
