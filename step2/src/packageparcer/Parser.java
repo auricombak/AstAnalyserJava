@@ -1,4 +1,4 @@
-package step2;
+package packageparcer;
 
 import java.io.File;
 import java.io.IOException;
