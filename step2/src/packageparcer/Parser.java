@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
@@ -39,9 +40,12 @@ public class Parser {
 			nbMethodes = 0, 
 			nbLignes = 0;
 		HashSet<String> packages = new HashSet<>(); 
+		ArrayList <Integer> methodsRep = new ArrayList<>();
+		ArrayList <Integer> linesMethRep = new ArrayList<>();
 		
 		final File folder = new File(projectSourcePath);
 		ArrayList<File> javaFiles = listJavaFilesForFolder(folder);
+
 
 		//
 		for (File fileEntry : javaFiles) {
@@ -58,10 +62,22 @@ public class Parser {
 			//for each file visited, count the number of methods
 			nbMethodes += NbMethodsPerFile(parse);
 			
+			//Add package name in HashSet to avoid duplicates
 			String pack = printPackageInfo(parse);
 			packages.add(printPackageInfo(parse));
+			
+			//Merge array of number of methods per class per file in the methodsRep ( repartition array ) 
+			for(Integer j: NbMethodesPerClassPerFile(parse)) {
+				methodsRep.add(j);
+			}
+			
+			//Merge array of number of lines per methods per file in the linesMethRep ( repartition array ) 
+			for(Integer j: NbLinesPerMethodsPerFile(parse)) {
+				linesMethRep.add(j);
+			}
 
 		}
+		
 		
 		//print nb classes
 		System.out.println("Il y a : " + nbClasses + " Classe(s)");
@@ -74,6 +90,12 @@ public class Parser {
 		
 		//print nb packages non vides
 		System.out.println("Il y a : " + packages.size()  + " Package(s)");
+		
+		//print method average per class
+		System.out.println("Il y a une moyenne de " + calculateAverage(methodsRep)  + " méthodes par classes");
+		
+		//print method average per class
+		System.out.println("Il y a une moyenne de " + calculateAverage(linesMethRep)  + " lignes par methodes");
 	}
 
 	// read all java files from specific folder
@@ -91,15 +113,23 @@ public class Parser {
 		return javaFiles;
 	}
 	
-	
-
 	//Count the number of line in a string
 	private static int countLines(String str){
 		String[] lines = str.split("\r\n|\r|\n");
 		return  lines.length;
 	}
 
-
+	//calculate average of an List
+	private static double calculateAverage(List <Integer> marks) {
+		  Integer sum = 0;
+		  if(!marks.isEmpty()) {
+		    for (Integer mark : marks) {
+		        sum += mark;
+		    }
+		    return sum.doubleValue() / marks.size();
+		  }
+		  return sum;
+	}
 
 	// create AST
 	private static CompilationUnit parse(char[] classSource) {
@@ -125,11 +155,21 @@ public class Parser {
 	
 	// navigate into class
 	public static int NbClassesPerFile(CompilationUnit parse) {
-		ClassNumberVisitor visitor = new ClassNumberVisitor();
+		TypeDeclarationVisitor visitor = new TypeDeclarationVisitor();
 		parse.accept(visitor);
 
 		// System.out.println("Il y a : " + visitor.getNbClass() + " classes");
 		return visitor.getNbClass();
+
+	}
+	
+	// navigate into class
+	public static List<Integer> NbMethodesPerClassPerFile(CompilationUnit parse) {
+		TypeDeclarationVisitor visitor = new TypeDeclarationVisitor();
+		parse.accept(visitor);
+
+		// System.out.println("Il y a : " + visitor.getNbClass() + " classes");
+		return visitor.getArrayNbMethods();
 
 	}
 
@@ -142,6 +182,17 @@ public class Parser {
 		return visitor.getMethods().size();
 
 	}
+	
+	// navigate into class
+	public static List<Integer> NbLinesPerMethodsPerFile(CompilationUnit parse) {
+		MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
+		parse.accept(visitor);
+
+		// System.out.println("Il y a : " + visitor.getNbClass() + " classes");
+		return visitor.getArrayNbLines();
+
+	}
+	
 	
 	// navigate method information
 	public static void printMethodInfo(CompilationUnit parse) {
@@ -157,7 +208,7 @@ public class Parser {
 	
 	// navigate package information
 	public static String printPackageInfo(CompilationUnit parse) {
-		PackageNumberVisitor visitor = new PackageNumberVisitor();
+		PackageVisitor visitor = new PackageVisitor();
 		parse.accept(visitor);
 
 		PackageDeclaration p = visitor.getPackage();

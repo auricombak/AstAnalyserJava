@@ -7,7 +7,7 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
-public class PackageNumberVisitor extends ASTVisitor {
+public class PackageVisitor extends ASTVisitor {
 	private PackageDeclaration packageVisited ;
 	
 	public boolean visit(PackageDeclaration node) {
