@@ -2,11 +2,14 @@ package packageparcer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
+import java.util.TreeMap;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class TypeDeclarationVisitor extends ASTVisitor {
@@ -42,5 +45,12 @@ public class TypeDeclarationVisitor extends ASTVisitor {
 		}
 		return nbAttributs;
 	}
-	
+
+	public TreeMap<Integer, Name> getTreeTypeNbMethods(){
+		TreeMap<Integer, Name> typeMethods = new TreeMap<>();
+		for (TypeDeclaration eachClass : types) {
+			typeMethods.put(eachClass.getMethods().length, eachClass.getName());
+		}
+		return typeMethods;
+	}
 }

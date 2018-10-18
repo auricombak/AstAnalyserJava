@@ -3,9 +3,12 @@ package packageparcer;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.core.internal.utils.FileUtil;
@@ -43,6 +46,7 @@ public class Parser {
 		ArrayList <Integer> methodsRep = new ArrayList<>();
 		ArrayList <Integer> linesMethRep = new ArrayList<>();
 		ArrayList <Integer> attributesRep = new ArrayList<>();
+		TreeMap<Integer, Name> typeMethods = new TreeMap<>();
 		
 		final File folder = new File(projectSourcePath);
 		ArrayList<File> javaFiles = listJavaFilesForFolder(folder);
@@ -81,6 +85,8 @@ public class Parser {
 			for(Integer j: NbAttributesPerClassPerFile(parse)) {
 				attributesRep.add(j);
 			}
+			
+			typeMethods.putAll(TreeClassNbMethods(parse));
 
 		}
 		
@@ -105,6 +111,20 @@ public class Parser {
 		
 		//print method average per class
 		System.out.println("Il y a une moyenne de " + calculateAverage(attributesRep)  + " attributs par classe");
+		
+		int sizeT = typeMethods.size();
+		int tenPerCent = (int)Math.round(sizeT/10.0);
+		if(tenPerCent == 0) {tenPerCent = 1;}
+		Map<Integer, Name> rm = typeMethods.descendingMap();
+		int count = 0;
+		System.out.println("\n"+"Les 10 % des classes contenant le plus de methodes");
+		for (Map.Entry<Integer,Name> entry:rm.entrySet()) {
+		     if (count >= tenPerCent) break;
+
+		     System.out.println("     N° "+ count + 1 + " ->  Class " + entry.getValue() + " | Nb Class : " +entry.getKey() );
+		     count++;
+		  }
+		
 	}
 
 	// read all java files from specific folder
@@ -122,24 +142,6 @@ public class Parser {
 		return javaFiles;
 	}
 	
-	//Count the number of line in a string
-	private static int countLines(String str){
-		String[] lines = str.split("\r\n|\r|\n");
-		return  lines.length;
-	}
-
-	//calculate average of an List
-	private static double calculateAverage(List <Integer> marks) {
-		  Integer sum = 0;
-		  if(!marks.isEmpty()) {
-		    for (Integer mark : marks) {
-		        sum += mark;
-		    }
-		    return sum.doubleValue() / marks.size();
-		  }
-		  return sum;
-	}
-
 	// create AST
 	private static CompilationUnit parse(char[] classSource) {
 		ASTParser parser = ASTParser.newParser(AST.JLS4); // java +1.6
@@ -161,6 +163,25 @@ public class Parser {
 		
 		return (CompilationUnit) parser.createAST(null); // create and parse
 	}
+	
+	//Count the number of line in a string
+	private static int countLines(String str){
+		String[] lines = str.split("\r\n|\r|\n");
+		return  lines.length;
+	}
+
+	//calculate average of an List
+	private static double calculateAverage(List <Integer> marks) {
+		  Integer sum = 0;
+		  if(!marks.isEmpty()) {
+		    for (Integer mark : marks) {
+		        sum += mark;
+		    }
+		    return sum.doubleValue() / marks.size();
+		  }
+		  return sum;
+	}
+
 	
 	// navigate into class
 	public static List<Integer> NbAttributesPerClassPerFile(CompilationUnit parse) {
@@ -191,8 +212,17 @@ public class Parser {
 		return visitor.getArrayNbMethods();
 
 	}
-
+	
 	// navigate into class
+	public static TreeMap<Integer, Name> TreeClassNbMethods(CompilationUnit parse) {
+		TypeDeclarationVisitor visitor = new TypeDeclarationVisitor();
+		parse.accept(visitor);
+
+		return visitor.getTreeTypeNbMethods();
+
+	}
+
+	// navigate into methods
 	public static int NbMethodsPerFile(CompilationUnit parse) {
 		MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
 		parse.accept(visitor);
@@ -202,7 +232,7 @@ public class Parser {
 
 	}
 	
-	// navigate into class
+	// navigate into methods
 	public static List<Integer> NbLinesPerMethodsPerFile(CompilationUnit parse) {
 		MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
 		parse.accept(visitor);
@@ -210,8 +240,7 @@ public class Parser {
 		// System.out.println("Il y a : " + visitor.getNbClass() + " classes");
 		return visitor.getArrayNbLines();
 
-	}
-	
+	}	
 	
 	// navigate method information
 	public static void printMethodInfo(CompilationUnit parse) {
@@ -256,7 +285,7 @@ public class Parser {
 	}
 	
 	// navigate method invocations inside method
-		public static void printMethodInvocationInfo(CompilationUnit parse) {
+	public static void printMethodInvocationInfo(CompilationUnit parse) {
 
 			MethodDeclarationVisitor visitor1 = new MethodDeclarationVisitor();
 			parse.accept(visitor1);
@@ -273,6 +302,6 @@ public class Parser {
 			}
 		}
 		
-
+	
 
 }
