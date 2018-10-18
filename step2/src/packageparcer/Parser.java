@@ -42,6 +42,7 @@ public class Parser {
 		HashSet<String> packages = new HashSet<>(); 
 		ArrayList <Integer> methodsRep = new ArrayList<>();
 		ArrayList <Integer> linesMethRep = new ArrayList<>();
+		ArrayList <Integer> attributesRep = new ArrayList<>();
 		
 		final File folder = new File(projectSourcePath);
 		ArrayList<File> javaFiles = listJavaFilesForFolder(folder);
@@ -75,6 +76,11 @@ public class Parser {
 			for(Integer j: NbLinesPerMethodsPerFile(parse)) {
 				linesMethRep.add(j);
 			}
+			
+			//Merge array of number of lines per methods per file in the attributesRep ( repartition array ) 
+			for(Integer j: NbAttributesPerClassPerFile(parse)) {
+				attributesRep.add(j);
+			}
 
 		}
 		
@@ -96,6 +102,9 @@ public class Parser {
 		
 		//print method average per class
 		System.out.println("Il y a une moyenne de " + calculateAverage(linesMethRep)  + " lignes par methodes");
+		
+		//print method average per class
+		System.out.println("Il y a une moyenne de " + calculateAverage(attributesRep)  + " attributs par classe");
 	}
 
 	// read all java files from specific folder
@@ -151,6 +160,16 @@ public class Parser {
 		parser.setSource(classSource);
 		
 		return (CompilationUnit) parser.createAST(null); // create and parse
+	}
+	
+	// navigate into class
+	public static List<Integer> NbAttributesPerClassPerFile(CompilationUnit parse) {
+		TypeDeclarationVisitor visitor = new TypeDeclarationVisitor();
+		parse.accept(visitor);
+
+		// System.out.println("Il y a : " + visitor.getNbClass() + " classes");
+		return visitor.getArrayNbAttributes();
+
 	}
 	
 	// navigate into class

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
@@ -31,6 +32,15 @@ public class TypeDeclarationVisitor extends ASTVisitor {
 			nbMethodes.add(eachClass.getMethods().length);
 		}
 		return nbMethodes;
+	}
+	
+	//Return an List of Integer, where the size of the List => nb of attribute found in each class
+	public List<Integer> getArrayNbAttributes() {
+		List <Integer> nbAttributs = new ArrayList<Integer>();
+		for (TypeDeclaration eachClass : types) {
+			nbAttributs.add(eachClass.getFields().length);
+		}
+		return nbAttributs;
 	}
 	
 }
