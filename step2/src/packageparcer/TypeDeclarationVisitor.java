@@ -53,4 +53,12 @@ public class TypeDeclarationVisitor extends ASTVisitor {
 		}
 		return typeMethods;
 	}
+	
+	public TreeMap<Integer, Name> getTreeTypeNbAttributes(){
+		TreeMap<Integer, Name> typeAttributes = new TreeMap<>();
+		for (TypeDeclaration eachClass : types) {
+			typeAttributes.put(eachClass.getFields().length, eachClass.getName());
+		}
+		return typeAttributes;
+	}
 }

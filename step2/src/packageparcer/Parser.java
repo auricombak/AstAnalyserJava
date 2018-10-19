@@ -47,6 +47,7 @@ public class Parser {
 		ArrayList <Integer> linesMethRep = new ArrayList<>();
 		ArrayList <Integer> attributesRep = new ArrayList<>();
 		TreeMap<Integer, Name> typeMethods = new TreeMap<>();
+		TreeMap<Integer, Name> typeAttributes = new TreeMap<>();
 		
 		final File folder = new File(projectSourcePath);
 		ArrayList<File> javaFiles = listJavaFilesForFolder(folder);
@@ -87,6 +88,8 @@ public class Parser {
 			}
 			
 			typeMethods.putAll(TreeClassNbMethods(parse));
+			
+			typeAttributes.putAll(TreeClassNbAttributes(parse));
 
 		}
 		
@@ -112,21 +115,17 @@ public class Parser {
 		//print method average per class
 		System.out.println("Il y a une moyenne de " + calculateAverage(attributesRep)  + " attributs par classe");
 		
-		int sizeT = typeMethods.size();
-		int tenPerCent = (int)Math.round(sizeT/10.0);
-		if(tenPerCent == 0) {tenPerCent = 1;}
-		Map<Integer, Name> rm = typeMethods.descendingMap();
-		int count = 0;
 		System.out.println("\n"+"Les 10 % des classes contenant le plus de methodes");
-		for (Map.Entry<Integer,Name> entry:rm.entrySet()) {
-		     if (count >= tenPerCent) break;
-
-		     System.out.println("     N° "+ count + 1 + " ->  Class " + entry.getValue() + " | Nb Class : " +entry.getKey() );
-		     count++;
-		  }
+		getTenPerCent( typeMethods );
+		
+		System.out.println("\n"+"Les 10 % des classes contenant le plus d'attributs");
+		getTenPerCent( typeAttributes );
 		
 	}
 
+	
+
+	
 	// read all java files from specific folder
 	public static ArrayList<File> listJavaFilesForFolder(final File folder) {
 		ArrayList<File> javaFiles = new ArrayList<File>();
@@ -162,6 +161,25 @@ public class Parser {
 		parser.setSource(classSource);
 		
 		return (CompilationUnit) parser.createAST(null); // create and parse
+	}
+	
+	// Display 10% of most value in TreeMap
+	public static void getTenPerCent( TreeMap<Integer, Name> tm ){
+		
+		int sizeT = tm.size();
+		int tenPerCent = (int)Math.round(sizeT/10.0);
+		if(tenPerCent == 0) {tenPerCent = 1;}
+		Map<Integer, Name> rm = tm.descendingMap();
+		int count = 0;
+
+		for (Map.Entry<Integer,Name> entry:rm.entrySet()) {
+		     if (count >= tenPerCent) break;
+
+		     System.out.println("     N° "+ count + 1 + " ->  Class " + entry.getValue() + " | Nb Class : " +entry.getKey() );
+		     count++;
+		  }
+		
+		
 	}
 	
 	//Count the number of line in a string
@@ -212,7 +230,7 @@ public class Parser {
 		return visitor.getArrayNbMethods();
 
 	}
-	
+		
 	// navigate into class
 	public static TreeMap<Integer, Name> TreeClassNbMethods(CompilationUnit parse) {
 		TypeDeclarationVisitor visitor = new TypeDeclarationVisitor();
@@ -222,6 +240,16 @@ public class Parser {
 
 	}
 
+	
+	// navigate into class
+	public static TreeMap<Integer, Name> TreeClassNbAttributes(CompilationUnit parse) {
+		TypeDeclarationVisitor visitor = new TypeDeclarationVisitor();
+		parse.accept(visitor);
+
+		return visitor.getTreeTypeNbAttributes();
+
+	}
+	
 	// navigate into methods
 	public static int NbMethodsPerFile(CompilationUnit parse) {
 		MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
