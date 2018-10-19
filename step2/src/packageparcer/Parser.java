@@ -30,7 +30,10 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 public class Parser {
 	
 	//Give here the projectPath you want to analyse
-	public static final String projectPath = "/home/oguerisck/Documents/Refactoring/AstAnalyserJava/step2";
+	//public static final String projectPath = "/home/oguerisck/Documents/Refactoring/AstAnalyserJava/step2";
+	//public static final String projectPath = "/auto_home/lfaidherbe/workspace/Patern_Slate";
+	public static final String projectPath = "/auto_home/lfaidherbe/git/ASTAnalyser/step2";
+	
 	public static final String projectSourcePath = projectPath + "/src";
 	
 	//Give here the jre path, "whereis java" can help you
@@ -48,6 +51,8 @@ public class Parser {
 		ArrayList <Integer> attributesRep = new ArrayList<>();
 		TreeMap<Integer, Name> typeMethods = new TreeMap<>();
 		TreeMap<Integer, Name> typeAttributes = new TreeMap<>();
+		TreeMap<Integer, Name> methodLines = new TreeMap<>();
+		HashSet<Integer> nbParams = new HashSet<>(); 
 		
 		final File folder = new File(projectSourcePath);
 		ArrayList<File> javaFiles = listJavaFilesForFolder(folder);
@@ -90,6 +95,13 @@ public class Parser {
 			typeMethods.putAll(TreeClassNbMethods(parse));
 			
 			typeAttributes.putAll(TreeClassNbAttributes(parse));
+			
+			methodLines.putAll(TreeClassMethodsNbLines(parse));
+			
+			//Merge array of number of lines per methods per file in the linesMethRep ( repartition array ) 
+			for(Integer j: NbParamsPerMethodsPerFile(parse)) {
+				nbParams.add(j);
+			}
 
 		}
 		
@@ -116,10 +128,27 @@ public class Parser {
 		System.out.println("Il y a une moyenne de " + calculateAverage(attributesRep)  + " attributs par classe");
 		
 		System.out.println("\n"+"Les 10 % des classes contenant le plus de methodes");
-		getTenPerCent( typeMethods );
+		System.out.println(getTenPerCent( typeMethods ).toString());
 		
 		System.out.println("\n"+"Les 10 % des classes contenant le plus d'attributs");
-		getTenPerCent( typeAttributes );
+		System.out.println(getTenPerCent( typeAttributes ).toString());
+		
+		System.out.println("\n"+"Les classes faisant partie des 10% contenant le plus d'attributs & 10% contenant le plus de methodes");
+		printIntersectionMap(getTenPerCent( typeAttributes ), getTenPerCent( typeMethods ));
+		
+		System.out.println();
+		printClassMostXMeth(typeMethods, 4);
+		
+		System.out.println("\n"+"Les 10 % des methodes contenant le plus de lignes");
+		System.out.println(getTenPerCent( methodLines ).toString());
+		
+		int paramMax = 0;
+		for (Integer i : nbParams) {
+		    if(i > paramMax){
+		    	paramMax = i;
+		    }
+		}
+		System.out.println("\n"+"Le nombre max de paramètres par rapport à toutes les methodes : " + paramMax);
 		
 	}
 
@@ -164,20 +193,21 @@ public class Parser {
 	}
 	
 	// Display 10% of most value in TreeMap
-	public static void getTenPerCent( TreeMap<Integer, Name> tm ){
+	public static Map<Integer, Name> getTenPerCent( TreeMap<Integer, Name> tm ){
 		
 		int sizeT = tm.size();
 		int tenPerCent = (int)Math.round(sizeT/10.0);
 		if(tenPerCent == 0) {tenPerCent = 1;}
 		Map<Integer, Name> rm = tm.descendingMap();
 		int count = 0;
-
+		Map<Integer, Name> rm2 = new TreeMap<>();
 		for (Map.Entry<Integer,Name> entry:rm.entrySet()) {
 		     if (count >= tenPerCent) break;
-
-		     System.out.println("     N° "+ count + 1 + " ->  Class " + entry.getValue() + " | Nb Class : " +entry.getKey() );
+		     rm2.put(entry.getKey(), entry.getValue());
+		     //System.out.println("     N° "+ count + 1 + " ->  Class " + entry.getValue() + " | Nb Class : " +entry.getKey() );
 		     count++;
 		  }
+		return rm2;
 		
 		
 	}
@@ -200,6 +230,28 @@ public class Parser {
 		  return sum;
 	}
 
+	//Print the intersection of 2 Map
+	public static void printIntersectionMap(Map<Integer, Name> mapAtt, Map<Integer, Name> mapMet ){
+		for (Map.Entry<Integer,Name> entry:mapAtt.entrySet()) {
+		     if (mapMet.containsValue(entry.getValue())){
+		    	 System.out.println("     Classe " + entry.getValue() );
+
+		     }
+		    
+		  }
+		
+	}
+
+	//Print the intersection of 2 Map
+	public static void printClassMostXMeth(Map<Integer, Name> mapMet, int x ){
+		System.out.println("Classes ayant plus ou autant de " +x+" methodes");
+		for (Map.Entry<Integer,Name> entry:mapMet.entrySet()) {
+		     if (entry.getKey() >= x){
+		    	 System.out.println("     Classe " + entry.getValue() + " Avec " + entry.getKey() + " methodes" );
+
+		     }		    
+		  }		
+	}
 	
 	// navigate into class
 	public static List<Integer> NbAttributesPerClassPerFile(CompilationUnit parse) {
@@ -239,7 +291,6 @@ public class Parser {
 		return visitor.getTreeTypeNbMethods();
 
 	}
-
 	
 	// navigate into class
 	public static TreeMap<Integer, Name> TreeClassNbAttributes(CompilationUnit parse) {
@@ -247,6 +298,15 @@ public class Parser {
 		parse.accept(visitor);
 
 		return visitor.getTreeTypeNbAttributes();
+
+	}
+	
+	// navigate into method
+	public static TreeMap<Integer, Name> TreeClassMethodsNbLines(CompilationUnit parse) {
+		MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
+		parse.accept(visitor);
+
+		return visitor.getTreeMethodSize();
 
 	}
 	
@@ -270,6 +330,15 @@ public class Parser {
 
 	}	
 	
+	// navigate into methods
+	public static List<Integer> NbParamsPerMethodsPerFile(CompilationUnit parse) {
+		MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
+		parse.accept(visitor);
+
+		return visitor.getArrayNbParams();
+
+	}	
+	
 	// navigate method information
 	public static void printMethodInfo(CompilationUnit parse) {
 		MethodDeclarationVisitor visitor = new MethodDeclarationVisitor();
@@ -288,7 +357,11 @@ public class Parser {
 		parse.accept(visitor);
 
 		PackageDeclaration p = visitor.getPackage();
+		try{
 		return p.getName().toString();
+		}finally{
+			return "PAs de package";
+		}
 	}
 
 	// navigate variables inside method
