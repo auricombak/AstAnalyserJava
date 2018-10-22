@@ -1,4 +1,4 @@
-package packageparcer;
+package visitor;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -6,6 +6,7 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -14,6 +15,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public class TypeDeclarationVisitor extends ASTVisitor {
 	List<TypeDeclaration> types = new ArrayList<TypeDeclaration>();
+	
 	
 	public boolean visit(TypeDeclaration node) {
 		types.add(node);
@@ -24,6 +26,12 @@ public class TypeDeclarationVisitor extends ASTVisitor {
 		return types;
 	}
 	
+    public static List<TypeDeclaration> perform(ASTNode node) {
+        TypeDeclarationVisitor finder = new TypeDeclarationVisitor();
+        node.accept(finder);
+        return finder.getTypes();
+    }
+    
 	public int getNbClass() {
 		return types.size();
 	}

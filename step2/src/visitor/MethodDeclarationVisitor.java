@@ -1,9 +1,10 @@
-package packageparcer;
+package visitor;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Name;
@@ -20,6 +21,13 @@ public class MethodDeclarationVisitor extends ASTVisitor {
 	public List<MethodDeclaration> getMethods() {
 		return methods;
 	}
+	
+	public static List<MethodDeclaration> perform(ASTNode node) {
+		  MethodDeclarationVisitor finder = new MethodDeclarationVisitor();
+		  node.accept(finder);
+		  return finder.getMethods();
+	}
+	
 	
 	//Pour chaques methodes entre leurs nombre de lignes dans un tableau puis renvoie le tableau
 	public List<Integer> getArrayNbLines() {

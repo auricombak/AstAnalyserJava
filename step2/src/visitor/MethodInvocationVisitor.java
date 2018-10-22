@@ -1,8 +1,10 @@
-package packageparcer;
+package visitor;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.SuperMethodInvocation;
@@ -21,6 +23,11 @@ public class MethodInvocationVisitor extends ASTVisitor {
 		return super.visit(node);
 	}
 
+	public static List<MethodInvocation> perform(ASTNode node) {
+		MethodInvocationVisitor finder = new MethodInvocationVisitor();
+		node.accept(finder);
+		return finder.getMethods();
+	}
 	
 	public List<MethodInvocation> getMethods() {
 		return methods;
