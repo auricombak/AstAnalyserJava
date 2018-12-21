@@ -49,4 +49,22 @@ public class FileInfo extends Info {
       }
       return methods;
     }
+    
+    public ClassInfo getClassPerName(String name) {
+        for (ClassInfo classf : classes) {
+          if(classf.getName().equals(name)) {
+        	  return classf;
+          }
+        }
+        return null;
+    }
+    
+    public MethodInfo getMethodPerName(String name) {
+        for (ClassInfo classf : classes) {
+          if(classf.getMethodPerName(name) != null) {
+        	  return classf.getMethodPerName(name);
+          }
+        }
+        return null;
+    }
   }

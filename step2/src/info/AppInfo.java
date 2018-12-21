@@ -62,4 +62,22 @@ public class AppInfo extends Info{
       }
       return methods;
     }
+    
+    public ClassInfo getClassPerName(String name) {
+        for (PackageInfo pkg : packages) {
+          if(pkg.getClassPerName(name) != null) {
+        	  return pkg.getClassPerName(name);
+          }
+        }
+        return null;
+    }
+    
+    public MethodInfo getMethodPerName(String name) {
+        for (PackageInfo pkg : packages) {
+          if(pkg.getClassPerName(name) != null) {
+        	  return pkg.getMethodPerName(name);
+          }
+        }
+        return null;
+    }
 }

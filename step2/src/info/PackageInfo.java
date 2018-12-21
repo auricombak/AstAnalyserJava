@@ -61,4 +61,23 @@ public class PackageInfo extends Info {
       }
       return methods;
     }
+    
+    public ClassInfo getClassPerName(String name) {
+        for (FileInfo file : files) {
+          if(file.getClassPerName(name) != null) {
+        	  return file.getClassPerName(name);
+          }
+        }
+        return null;
+    }
+    
+    public MethodInfo getMethodPerName(String name) {
+        for (FileInfo file : files) {
+          if(file.getClassPerName(name) != null) {
+        	  return file.getMethodPerName(name);
+          }
+        }
+        return null;
+    }
+    
   }

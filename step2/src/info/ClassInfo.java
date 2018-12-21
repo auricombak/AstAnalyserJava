@@ -32,4 +32,14 @@ public class ClassInfo extends Info {
     public ArrayList<MethodInfo> getMethods() {
       return methods;
     }
+    
+    public MethodInfo getMethodPerName(String name) {
+        for (MethodInfo method : methods) {
+            if(method.getName().equals(name)) {
+          	  return method;
+            }
+          }
+          return null;
+     }
+
   }
