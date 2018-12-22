@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import guru.nidi.graphviz.attribute.Color;
+import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.RankDir;
 import guru.nidi.graphviz.attribute.Style;
 import guru.nidi.graphviz.engine.Format;
@@ -57,7 +58,7 @@ public class Parser {
 	
 	//public static final String projectPath = "/home/oguerisck/Documents/Refactoring/AstAnalyserJava/step2";
 	//public static final String projectPath = "/auto_home/lfaidherbe/workspace/Patern_Slate";
-	public static final String projectPath = "/home/oguerisck/Documents/Dev/Refactoring/AstAnalyserJava/step2";
+	public static final String projectPath = "/home/oguerisck/Bureau/Reutilisation/AstAnalyserJava/step2";
 	
 	public static final String projectSourcePath = projectPath + "/src";
 	
@@ -163,20 +164,13 @@ public class Parser {
 	    //13. Le nombre maximal de paramètres par rapport à toutes les méthodes de l’application.
 	    int max = 0;
 	    for (MethodInfo meth : app.getMethods()) {
+	    	System.out.println("NbParam : " + meth.getName() + ":" + meth.nbParameters);
 	      if (meth.nbParameters > max) {
 	        max = meth.nbParameters;
 	      }
 	    }
 	    System.out.print("Nombre maximal de paramètres dans une méthode: " + max + "\n\n");
-	    
-	    Graph g = graph("example1").directed()
-	            .graphAttr().with(RankDir.LEFT_TO_RIGHT)
-	            .with(
-	                    node("a").with(Color.RED).link(node("b")),
-	                    node("b").link(to(node("c")).with(Style.DASHED))
-	            );
-	    Graphviz.fromGraph(g).height(100).render(Format.PNG).toFile(new File("example/ex1.png"));
-	    
+	       
 	    //__________________________________________________________________________________________//
 	    
 	    //Affiche le Graphe d'appels du programme
@@ -186,12 +180,74 @@ public class Parser {
 	    //displayMethodCall();
 
 	    //Pour deux classes données, calcule le couplage de celles-ci
-	    getCouplage2Classes();
+	    //getCouplage2Classes();
 
-
+	    //Génère un graphe de couplage pondéré
+	    generateCouplageGraph();
+	    System.out.println("END");
 
 	}
 
+	public static void prepareCouplage() throws IOException {
+	    //Graphe d'appels du programme
+		MutableGraph g = mutGraph("callGraph").setStrict(true);
+//		MethodInfo main = null;
+//	    main = app.getMethodPerName("main");
+//	    MutableNode methodNode = mutNode(main.getName()).add(Color.RED);
+		callGraphVisit = new ArrayList<MutableNode>();
+		for(MethodInfo mi : app.getMethods()) {
+			MutableNode methodNode = mutNode(mi.getName()).add(Color.RED);
+		    callGraphVisit.add(methodNode);
+		    recursiveIncrementCalls(methodNode, mi);
+		    g.add(methodNode);
+		}       
+	    Graphviz.fromGraph(g).width(1500).render(Format.SVG).toFile(new File("example/call_graph_meth.svg"));
+	}
+	
+	public static void recursiveIncrementCalls(MutableNode node,MethodInfo method ) {
+		if(method == null ) {
+			return;
+		}
+		for(String called: method.calledMethods){
+
+		    	MutableNode callNode = mutNode(called);
+		    	node.addLink(callNode);
+		    	method.incrementCall(called);
+		    	
+			if(!callGraphVisit.contains(mutNode(called))) {
+				callGraphVisit.add(mutNode(called));
+	    	  	String [] tokens = called.split("\\.");
+	    	  	ClassInfo classFound = app.getClassPerName(tokens[0]);
+
+	    	  	if(classFound != null ) {
+
+	    	  		linkNodes(callNode, classFound.getMethodPerName(called));
+	    	  	}
+		    	
+		        //System.out.println("\t" + called);
+			}
+	      }
+	}
+	
+	public static void generateCouplageGraph() throws IOException {
+		prepareCouplage();
+		MutableGraph g = mutGraph("couplageGraph").setStrict(true);
+		ArrayList<ClassInfo> classes = app.getClasses();
+		for(int i = 0; i<classes.size();i++) {
+			MutableNode classNodeA = mutNode(classes.get(i).getName());			
+			for(int j = i+1; j<classes.size()-1;j++) {
+				Double labelLink = couplageClass(classes.get(i), classes.get(j));
+				if(labelLink > 0.0) {
+					MutableNode classNodeB = mutNode(classes.get(j).getName());
+					//classNodeA.addLink(classNodeB);
+					classNodeA.addLink(to(classNodeB).with(Label.html(String.format( "%.2f",labelLink)+"%")));
+				}
+			}
+			g.add(classNodeA);
+		}
+		 Graphviz.fromGraph(g).width(1500).render(Format.SVG).toFile(new File("example/couplage_graph.svg"));
+	
+	}
 
 	public static void getCouplage2Classes() {
 		System.out.println("Tapez le nom de la premiere classe à comparer");
@@ -215,7 +271,7 @@ public class Parser {
 		}
 	}
 	
-	public static void couplageClass(ClassInfo A, ClassInfo B) {
+	public static double couplageClass(ClassInfo A, ClassInfo B) {
 		Double nbCallA = 0.0, nbCallB = 0.0;
 		Double nbCallAB = 0.0, nbCallBA = 0.0;
 		String classNameA = A.getName();
@@ -253,10 +309,11 @@ public class Parser {
         }
         Double ratioA = nbCallAB/nbCallA;
         Double ratioB = nbCallBA/nbCallB;
+        Double result = (nbCallAB+nbCallBA)*100/(nbCallA+nbCallB);
         //System.out.println("nbCallAB : " + nbCallAB + "\n nbCallA : " + nbCallA);
         //System.out.println("nbCallBA : " + nbCallBA + "\n nbCallB : " + nbCallB);
-        System.out.println("La classe A est couplé à " + (nbCallAB+nbCallBA)*100/(nbCallA+nbCallB) + "%");
-
+        // System.out.println("La classe A est couplé à " + result + "%");
+        return result;
 	}
 	
 	public static void displayMethodCall() {
@@ -288,22 +345,18 @@ public class Parser {
 	
 	public static void generateCallGraph() throws IOException {
 	    //Graphe d'appels du programme
-		MutableGraph g = mutGraph("example1").setStrict(true);
-//		MethodInfo main = null;
-//		for(MethodInfo mi : app.getMethods()) {
-//			//System.out.println(mi.getName());
-//			if(mi.getName().equals("main")) {	
-//				main = mi;
-//			}
-//		}
+		MutableGraph g = mutGraph("callGraph").setStrict(true);
+		
 		MethodInfo main = null;
-	    main = app.getMethodPerName("main");
-
+	    main = app.getMethodMain();
+	    
 	    MutableNode methodNode = mutNode(main.getName()).add(Color.RED);
-	    callGraphVisit = new ArrayList<MutableNode>();
+	    
+		callGraphVisit = new ArrayList<MutableNode>();
 	    callGraphVisit.add(methodNode);
+	    
 	    linkNodes(methodNode, main);
-
+	    
 	    g.add(methodNode);    
 	    Graphviz.fromGraph(g).width(1500).render(Format.SVG).toFile(new File("example/call_graph.svg"));
 	}
@@ -315,9 +368,8 @@ public class Parser {
 		for(String called: method.calledMethods){
 
 		    	MutableNode callNode = mutNode(called);
-		    	Link link = to(node);
 		    	node.addLink(callNode);
-		    	method.incrementCall(called);
+		    	
 			if(!callGraphVisit.contains(mutNode(called))) {
 				callGraphVisit.add(mutNode(called));
 	    	  	String [] tokens = called.split("\\.");
@@ -325,15 +377,12 @@ public class Parser {
 
 	    	  	if(classFound != null ) {
 
-	    	  		linkNodes(callNode, classFound.getMethodPerName(tokens[1]));
+	    	  		linkNodes(callNode, classFound.getMethodPerName(called));
 	    	  	}
-		    	
-		        //System.out.println("\t" + called);
 			}
 	      }
 	}
-	
-	
+		
 	// Read all info from src and store informations
 	public static Info getInfo(final File folder) throws IOException {
 		if (folder.getName().equals("src")) {
@@ -364,7 +413,7 @@ public class Parser {
 		          clsInfo.nbLines = type.toString().split("\n").length;
 		          for (MethodDeclaration meth : type.getMethods()) {
 		            MethodInfo methodInfo = new MethodInfo();
-		            methodInfo.name = meth.getName().toString();
+		            methodInfo.name = clsInfo.name + "." + meth.getName().toString();
 		            methodInfo.nbParameters = meth.parameters().size();
 		            methodInfo.nbLines = meth.getBody().toString().split("\n").length;
 		            for(MethodInvocation inv: MethodInvocationVisitor.perform(meth)) {
@@ -385,11 +434,7 @@ public class Parser {
 		    return null;
 	}
 
-	//###################################################################################
-	
-	//################################### create AST ####################################
-	
-
+	//Create AST
 	private static CompilationUnit parse(char[] classSource) {
 		ASTParser parser = ASTParser.newParser(AST.JLS4); // java +1.6
 		parser.setResolveBindings(true);
@@ -410,13 +455,8 @@ public class Parser {
 		
 		return (CompilationUnit) parser.createAST(null); // create and parse
 	}
-	
-	//###################################################################################
-	
-	
-	
-	
-	  public static ArrayList<ClassInfo> sortClassesByMethodNumber(ArrayList<ClassInfo> classes) {
+			
+	public static ArrayList<ClassInfo> sortClassesByMethodNumber(ArrayList<ClassInfo> classes) {
 
 		    for (int i = 0; i < classes.size() - 1; i++) {
 		      for (int j = i + 1; j < classes.size(); j++) {
@@ -428,9 +468,9 @@ public class Parser {
 		      }
 		    }
 		    return classes;
-		  }
+	}
 
-		  public static ArrayList<ClassInfo> sortClassesByFieldsNumber(ArrayList<ClassInfo> classes) {
+	public static ArrayList<ClassInfo> sortClassesByFieldsNumber(ArrayList<ClassInfo> classes) {
 
 		    for (int i = 0; i < classes.size() - 1; i++) {
 		      for (int j = i + 1; j < classes.size(); j++) {
@@ -444,7 +484,7 @@ public class Parser {
 		    return classes;
 		  }
 
-		  public static ArrayList<MethodInfo> sortMethodsByParameterNumber(ArrayList<MethodInfo> methods) {
+	public static ArrayList<MethodInfo> sortMethodsByParameterNumber(ArrayList<MethodInfo> methods) {
 		    for (int i = 0; i < methods.size() - 1; i++) {
 		      for (int j = i + 1; j < methods.size(); j++) {
 		        if (methods.get(i).nbParameters < methods.get(j).nbParameters) {

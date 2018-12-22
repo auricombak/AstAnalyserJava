@@ -41,5 +41,16 @@ public class ClassInfo extends Info {
           }
           return null;
      }
+    
+    public MethodInfo getMethodMain() {
+        for (MethodInfo method : methods) {
+        	String methName = method.getName();
+    	  	String [] tokens = methName.split("\\.");
+            if(tokens[1].equals("main")) {
+          	  return method;
+            }
+          }
+          return null;
+     }
 
   }

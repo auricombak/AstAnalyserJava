@@ -80,4 +80,13 @@ public class PackageInfo extends Info {
         return null;
     }
     
+    public MethodInfo getMethodMain() {
+        for (FileInfo file : files) {
+          if(file.getMethodMain() != null) {
+        	  return file.getMethodMain();
+          }
+        }
+        return null;
+    }
+    
   }

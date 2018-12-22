@@ -80,4 +80,13 @@ public class AppInfo extends Info{
         }
         return null;
     }
+    
+    public MethodInfo getMethodMain() {
+        for (PackageInfo pkg : packages) {
+          if(pkg.getMethodMain() != null) {
+        	  return pkg.getMethodMain();
+          }
+        }
+        return null;
+    }
 }

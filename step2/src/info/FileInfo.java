@@ -67,4 +67,13 @@ public class FileInfo extends Info {
         }
         return null;
     }
+    
+    public MethodInfo getMethodMain() {
+        for (ClassInfo classf : classes) {
+          if(classf.getMethodMain() != null) {
+        	  return classf.getMethodMain();
+          }
+        }
+        return null;
+    }
   }
