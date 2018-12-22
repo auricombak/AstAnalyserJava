@@ -1,11 +1,13 @@
 package info;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class MethodInfo extends Info {
     public int nbLines;
     public int nbParameters;
     public ArrayList<String> calledMethods = new ArrayList<>();
+    public HashMap<String, Integer> weightedCalls = new HashMap<String,Integer>();
 
     public String toString() {
       String str = "\t\t\t\tMethod: " + this.name + ":\n";
@@ -15,6 +17,21 @@ public class MethodInfo extends Info {
       return str.substring(0, str.length() - 1);
     }
 
+    public void incrementCall(String calledMeth) {
+    	int i=0;
+    	if(weightedCalls.containsKey(calledMeth)) {
+    		i = this.weightedCalls.get(calledMeth);
+    		i++;
+    	}else {
+    		i=1;    		
+    	}
+    	weightedCalls.put(calledMeth, i);
+    }
+    
+    public HashMap<String, Integer> getWeightedCalls(){
+    	return weightedCalls;
+    }
+    
     public int getLines() {
       return nbLines;
     }

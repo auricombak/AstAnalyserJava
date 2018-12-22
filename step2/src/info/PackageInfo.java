@@ -73,7 +73,7 @@ public class PackageInfo extends Info {
     
     public MethodInfo getMethodPerName(String name) {
         for (FileInfo file : files) {
-          if(file.getClassPerName(name) != null) {
+          if(file.getMethodPerName(name) != null) {
         	  return file.getMethodPerName(name);
           }
         }

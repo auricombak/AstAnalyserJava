@@ -5,10 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.TreeMap;
 
@@ -178,66 +180,83 @@ public class Parser {
 	    //__________________________________________________________________________________________//
 	    
 	    //Affiche le Graphe d'appels du programme
-	    displayGraph();
+	    generateCallGraph();
 	    
 	    //Affiche les methodes pour une classes donnée, et pour une methode donnée les appels
 	    //displayMethodCall();
 
+	    //Pour deux classes données, calcule le couplage de celles-ci
+	    getCouplage2Classes();
 
 
-//		System.out.println("Tapez le nom de la premiere classe à comparer");
-//		Scanner sc = new Scanner(System.in);
-//		String classToSearch = sc.nextLine();
-//		System.out.println("Tapez le nom de la deuxième classe à comparer");
-//		String classToSearch2 = sc.nextLine();
-//		ClassInfo comparableClassA = null;
-//		ClassInfo comparableClassB = null;
-//
-//		for (ClassInfo cls : app.getClasses()) {
-//			if (cls.name.equals(classToSearch)) {
-//		        comparableClassA = cls;
-//		    }
-//		    if (cls.name.equals(classToSearch2)) {
-//		    	comparableClassB = cls;
-//			}
-//		}
-//		if(comparableClassA != null && comparableClassB != null) {
-//			couplageClass(comparableClassA,comparableClassB);
-//		}
+
 	}
 
 
+	public static void getCouplage2Classes() {
+		System.out.println("Tapez le nom de la premiere classe à comparer");
+		Scanner sc = new Scanner(System.in);
+		String classToSearch = sc.nextLine();
+		System.out.println("Tapez le nom de la deuxième classe à comparer");
+		String classToSearch2 = sc.nextLine();
+		ClassInfo comparableClassA = null;
+		ClassInfo comparableClassB = null;
+
+		for (ClassInfo cls : app.getClasses()) {
+			if (cls.name.equals(classToSearch)) {
+		        comparableClassA = cls;
+		    }
+		    if (cls.name.equals(classToSearch2)) {
+		    	comparableClassB = cls;
+			}
+		}
+		if(comparableClassA != null && comparableClassB != null) {
+			couplageClass(comparableClassA,comparableClassB);
+		}
+	}
+	
 	public static void couplageClass(ClassInfo A, ClassInfo B) {
 		Double nbCallA = 0.0, nbCallB = 0.0;
 		Double nbCallAB = 0.0, nbCallBA = 0.0;
 		String classNameA = A.getName();
 		String classNameB = B.getName();
         for (MethodInfo meth : A.getMethods()) {
-        	  nbCallA += meth.calledMethods.size();
-	          for (String called : meth.calledMethods) {
-		        	String [] tokens = called.split("\\.");
-
-		        	if(tokens[0].equals(classNameB)) {
-
-		        		nbCallAB ++;
+        	  HashMap<String, Integer> weightedCalls = meth.getWeightedCalls();
+        	  for(Entry<String, Integer> e : weightedCalls.entrySet()) {
+        		  String called = e.getKey();
+        		  String [] tokens = called.split("\\.");
+		        	if(!tokens[0].equals(classNameA)) {
+			        	//System.out.println(tokens[0]);
+			        	if(tokens[0].equals(classNameB)) {
+			        		nbCallAB += e.getValue();
+			        	}
+			        	nbCallA += e.getValue();
+			        	
 		        	}
-		      }
+        	  }
         }
         for (MethodInfo meth : B.getMethods()) {
-      	  	  nbCallB += meth.calledMethods.size();
-	          for (String called : meth.calledMethods) {
-	        	  	String [] tokens = called.split("\\.");
 
-	        	  	if(tokens[0].equals(classNameA)) {
-
-	        	  		nbCallBA ++;
-	        	  	}
-		      }
+      	  HashMap<String, Integer> weightedCalls = meth.getWeightedCalls();
+      	  for(Entry<String, Integer> e : weightedCalls.entrySet()) {
+      		  String called = e.getKey();
+      		  String [] tokens = called.split("\\.");
+		        	if(!tokens[0].equals(classNameB)) {
+			        	//System.out.println(tokens[0]);
+			        	if(tokens[0].equals(classNameA)) {
+			        		nbCallBA += e.getValue();
+			        	}
+			        	nbCallB += e.getValue();
+			        	
+		        	}
+      	  }
         }
         Double ratioA = nbCallAB/nbCallA;
         Double ratioB = nbCallBA/nbCallB;
-        System.out.println("La classe A est couplé à " + nbCallAB/nbCallA + "%");
-        System.out.println("La classe B est couplé à " + nbCallBA/nbCallB + "%");
+        //System.out.println("nbCallAB : " + nbCallAB + "\n nbCallA : " + nbCallA);
+        //System.out.println("nbCallBA : " + nbCallBA + "\n nbCallB : " + nbCallB);
+        System.out.println("La classe A est couplé à " + (nbCallAB+nbCallBA)*100/(nbCallA+nbCallB) + "%");
+
 	}
 	
 	public static void displayMethodCall() {
@@ -267,17 +286,18 @@ public class Parser {
 		    }
 	}
 	
-	public static void displayGraph() throws IOException {
+	public static void generateCallGraph() throws IOException {
 	    //Graphe d'appels du programme
 		MutableGraph g = mutGraph("example1").setStrict(true);
+//		MethodInfo main = null;
+//		for(MethodInfo mi : app.getMethods()) {
+//			//System.out.println(mi.getName());
+//			if(mi.getName().equals("main")) {	
+//				main = mi;
+//			}
+//		}
 		MethodInfo main = null;
-		for(MethodInfo mi : app.getMethods()) {
-			//System.out.println(mi.getName());
-			if(mi.getName().equals("main")) {	
-				main = mi;
-			}
-		}
-	    //MethodInfo main = app.getMethodPerName("main");
+	    main = app.getMethodPerName("main");
 
 	    MutableNode methodNode = mutNode(main.getName()).add(Color.RED);
 	    callGraphVisit = new ArrayList<MutableNode>();
@@ -294,11 +314,10 @@ public class Parser {
 		}
 		for(String called: method.calledMethods){
 
-
-
 		    	MutableNode callNode = mutNode(called);
 		    	Link link = to(node);
 		    	node.addLink(callNode);
+		    	method.incrementCall(called);
 			if(!callGraphVisit.contains(mutNode(called))) {
 				callGraphVisit.add(mutNode(called));
 	    	  	String [] tokens = called.split("\\.");
@@ -313,6 +332,7 @@ public class Parser {
 			}
 	      }
 	}
+	
 	
 	// Read all info from src and store informations
 	public static Info getInfo(final File folder) throws IOException {

@@ -74,7 +74,7 @@ public class AppInfo extends Info{
     
     public MethodInfo getMethodPerName(String name) {
         for (PackageInfo pkg : packages) {
-          if(pkg.getClassPerName(name) != null) {
+          if(pkg.getMethodPerName(name) != null) {
         	  return pkg.getMethodPerName(name);
           }
         }
