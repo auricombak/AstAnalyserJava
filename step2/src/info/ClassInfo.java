@@ -2,7 +2,7 @@ package info;
 
 import java.util.ArrayList;
 
-public class ClassInfo extends Info {
+public class ClassInfo extends Info implements DendroElt{
     public ArrayList<MethodInfo> methods = new ArrayList<>();
     public int nbLines;
     public int nbFields;
