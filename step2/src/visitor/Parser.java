@@ -47,6 +47,7 @@ import static guru.nidi.graphviz.model.Factory.*;
 
 import info.AppInfo;
 import info.ClassInfo;
+import info.DendroGenerator;
 import info.FileInfo;
 import info.Info;
 import info.MethodInfo;
@@ -164,7 +165,6 @@ public class Parser {
 	    //13. Le nombre maximal de paramètres par rapport à toutes les méthodes de l’application.
 	    int max = 0;
 	    for (MethodInfo meth : app.getMethods()) {
-	    	System.out.println("NbParam : " + meth.getName() + ":" + meth.nbParameters);
 	      if (meth.nbParameters > max) {
 	        max = meth.nbParameters;
 	      }
@@ -184,6 +184,11 @@ public class Parser {
 
 	    //Génère un graphe de couplage pondéré
 	    generateCouplageGraph();
+	    
+	    //Génère un dendogramme
+	    DendroGenerator dg = new DendroGenerator(app);
+	    dg.start();
+	    
 	    System.out.println("END");
 
 	}
@@ -307,12 +312,17 @@ public class Parser {
 		        	}
       	  }
         }
-        Double ratioA = nbCallAB/nbCallA;
-        Double ratioB = nbCallBA/nbCallB;
-        Double result = (nbCallAB+nbCallBA)*100/(nbCallA+nbCallB);
-        //System.out.println("nbCallAB : " + nbCallAB + "\n nbCallA : " + nbCallA);
-        //System.out.println("nbCallBA : " + nbCallBA + "\n nbCallB : " + nbCallB);
-        // System.out.println("La classe A est couplé à " + result + "%");
+        
+        Double result;
+        if(nbCallA == 0.0 || nbCallB == 0.0) {
+        	result = 0.0;
+        }else {
+            Double ratioA = nbCallAB/nbCallA;
+            Double ratioB = nbCallBA/nbCallB;
+            result = (nbCallAB+nbCallBA)*100/(nbCallA+nbCallB);
+        }
+
+
         return result;
 	}
 	
@@ -426,8 +436,8 @@ public class Parser {
 		            clsInfo.methods.add(methodInfo);
 		          }
 		          clsInfo.nbFields = type.getFields().length;
+		          info.classes.add(clsInfo);
 		        }
-		        info.classes.add(clsInfo);
 		      }
 		      return info;
 		    }

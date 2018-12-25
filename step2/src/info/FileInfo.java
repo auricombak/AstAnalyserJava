@@ -51,7 +51,7 @@ public class FileInfo extends Info {
     }
     
     public ClassInfo getClassPerName(String name) {
-        for (ClassInfo classf : classes) {
+        for (ClassInfo classf : classes) {      	 
           if(classf.getName().equals(name)) {
         	  return classf;
           }

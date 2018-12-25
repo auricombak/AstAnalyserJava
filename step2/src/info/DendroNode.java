@@ -25,4 +25,10 @@ public class DendroNode implements DendroElt{
 	public void setWeight(Double weight) {
 		this.weight = weight;
 	}
+
+	@Override
+	public String getName() {
+		// TODO Auto-generated method stub
+		return "( W : " + weight + " ch1: " + leftChild.getName() + "  ch2:" + rightChild.getName() + ")";
+	}
 }
