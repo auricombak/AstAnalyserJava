@@ -32,6 +32,7 @@ import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
+import dendrogram.DendroGenerator;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.RankDir;
@@ -47,7 +48,6 @@ import static guru.nidi.graphviz.model.Factory.*;
 
 import info.AppInfo;
 import info.ClassInfo;
-import info.DendroGenerator;
 import info.FileInfo;
 import info.Info;
 import info.MethodInfo;

@@ -1,4 +1,4 @@
-package info;
+package dendrogram;
 
 public class DendroNode implements DendroElt{
 	private DendroElt leftChild;
@@ -27,8 +27,8 @@ public class DendroNode implements DendroElt{
 	}
 
 	@Override
-	public String getName() {
+	public Node createNode() {
 		// TODO Auto-generated method stub
-		return "( W : " + weight + " ch1: " + leftChild.getName() + "  ch2:" + rightChild.getName() + ")";
+		return DendrogramPaintPanel.create(this.leftChild.createNode() , this.rightChild.createNode(), this.weight);
 	}
 }

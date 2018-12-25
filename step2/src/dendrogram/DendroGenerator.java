@@ -1,8 +1,12 @@
-package info;
+package dendrogram;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+
+import info.AppInfo;
+import info.ClassInfo;
+
 import java.util.TreeMap;
 
 import visitor.Parser;
@@ -29,8 +33,6 @@ public class DendroGenerator {
 		
 		for(Entry<DendroElt, HashMap<DendroElt, Double>> e : matrice.entrySet()) {
 			if(!e.getKey().equals(nodeL) && !e.getKey().equals(nodeR)) {
-				
-				
 				//La valeur du nouveau croisement du noeud avec e = au max de l'ancien croisement de left avec e et right avec e.
 				if(matrice.get(e.getKey()).get(nodeL) >= matrice.get(e.getKey()).get(nodeR)) {
 					value = matrice.get(e.getKey()).get(nodeL);
@@ -71,12 +73,13 @@ public class DendroGenerator {
 		DendroElt right = null;
 		for(Entry <DendroElt, HashMap<DendroElt, Double>> en : matrice.entrySet()) {		
 			for(Entry<DendroElt, Double> en2 : en.getValue().entrySet()) {
+				if(en2.getValue()>=max) {
 				max = en2.getValue();
 				left = en.getKey();
 				right = en2.getKey();
+				}
 			}
 		}
-		
 		return new DendroNode(left, right, max);
 	}
 	
@@ -106,8 +109,10 @@ public class DendroGenerator {
 			DendroNode nodeMax = getMax();
 			this.addNode(nodeMax);
 		}
+		DendrogramPaintTest dp = new DendrogramPaintTest();
+
 		for(Entry <DendroElt, HashMap<DendroElt, Double>> en : matrice.entrySet() ) {
-			System.out.println(en.getKey().getName());
+			dp.start((DendroNode)en.getKey());
 		}
 		
 	}

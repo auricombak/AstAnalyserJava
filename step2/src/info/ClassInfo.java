@@ -1,6 +1,11 @@
 package info;
 
+
 import java.util.ArrayList;
+
+import dendrogram.DendroElt;
+import dendrogram.DendrogramPaintPanel;
+import dendrogram.Node;
 
 public class ClassInfo extends Info implements DendroElt{
     public ArrayList<MethodInfo> methods = new ArrayList<>();
@@ -53,4 +58,8 @@ public class ClassInfo extends Info implements DendroElt{
           return null;
      }
 
+	public Node createNode() {
+		// TODO Auto-generated method stub
+		return DendrogramPaintPanel.create(this.name);
+	}
   }
