@@ -1,4 +1,4 @@
-package visitor;
+package Main;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,6 +52,8 @@ import info.FileInfo;
 import info.Info;
 import info.MethodInfo;
 import info.PackageInfo;
+import visitor.MethodInvocationVisitor;
+import visitor.TypeDeclarationVisitor;
 
 public class Parser {
 	
@@ -60,6 +62,7 @@ public class Parser {
 	//public static final String projectPath = "/home/oguerisck/Documents/Refactoring/AstAnalyserJava/step2";
 	//public static final String projectPath = "/auto_home/lfaidherbe/workspace/Patern_Slate";
 	public static final String projectPath = "/home/oguerisck/Bureau/Reutilisation/AstAnalyserJava/step2";
+
 	
 	public static final String projectSourcePath = projectPath + "/src";
 	
@@ -190,9 +193,12 @@ public class Parser {
 	    dg.start();
 	    
 	    System.out.println("END");
+	    
+	    
 
 	}
 
+	
 	public static void prepareCouplage() throws IOException {
 	    //Graphe d'appels du programme
 		MutableGraph g = mutGraph("callGraph").setStrict(true);
@@ -239,16 +245,21 @@ public class Parser {
 		MutableGraph g = mutGraph("couplageGraph").setStrict(true);
 		ArrayList<ClassInfo> classes = app.getClasses();
 		for(int i = 0; i<classes.size();i++) {
+			Boolean isAlone = true;
 			MutableNode classNodeA = mutNode(classes.get(i).getName());			
 			for(int j = i+1; j<classes.size()-1;j++) {
-				Double labelLink = couplageClass(classes.get(i), classes.get(j));
+				Double labelLink = couplageClass(classes.get(i), classes.get(j));	
 				if(labelLink > 0.0) {
-					MutableNode classNodeB = mutNode(classes.get(j).getName());
-					//classNodeA.addLink(classNodeB);
+					MutableNode classNodeB = mutNode(classes.get(j).getName());	
 					classNodeA.addLink(to(classNodeB).with(Label.html(String.format( "%.2f",labelLink)+"%")));
+					isAlone = false;
+					classes.get(j).setCoupled();
 				}
 			}
-			g.add(classNodeA);
+			if(!isAlone) {
+				g.add(classNodeA);
+				classes.get(i).setCoupled();
+			}
 		}
 		 Graphviz.fromGraph(g).width(1500).render(Format.SVG).toFile(new File("example/couplage_graph.svg"));
 	

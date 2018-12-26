@@ -72,14 +72,13 @@ public class DendrogramPaintPanel extends JPanel
         currentY = 0;
 
         g.translate(margin, margin);
-        draw(g, root, 0,0.0);
+        draw(g, root, 0);
     }
 
 
-    private <T> Point draw(Graphics g, Node<T> node, int y , Double spacing)
+    private <T> Point draw(Graphics g, Node<T> node, int y )
     {
         List<Node<T>> children = node.getChildren();
-
         if (children.size() == 0)
         {
             int x = getWidth() - widthPerLevel - 2 * margin;
@@ -91,20 +90,20 @@ public class DendrogramPaintPanel extends JPanel
         }
         if (children.size() >= 2)
         {
-            Double nodeValue = 100-node.getValue()-spacing;
+            
             Node<T> child0 = children.get(0);
             Node<T> child1 = children.get(1);
-            Point p0 = draw(g, child0, y, nodeValue);
-            Point p1 = draw(g, child1, y+heightPerLeaf, nodeValue);
+            Point p0 = draw(g, child0, y);
+            Point p1 = draw(g, child1, y+heightPerLeaf);
 
             g.fillRect(p0.x-2, p0.y-2, 4, 4);
             g.fillRect(p1.x-2, p1.y-2, 4, 4);
-//          int dx = (int)(getWidth()*(nodeValue/100))-margin-margin;
             int dx = widthPerLevel;
             int vx = Math.min(p0.x-dx, p1.x-dx);
             g.drawLine(vx, p0.y, p0.x, p0.y);
             g.drawLine(vx, p1.y, p1.x, p1.y);
             g.drawLine(vx, p0.y, vx, p1.y);
+            g.drawString(String.format( "%.2f",node.getValue())+"%", vx+4, p0.y+(p1.y - p0.y)/2);
             Point p = new Point(vx, p0.y+(p1.y - p0.y)/2);
             return p;
         }

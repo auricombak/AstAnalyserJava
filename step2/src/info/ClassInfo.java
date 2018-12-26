@@ -11,6 +11,7 @@ public class ClassInfo extends Info implements DendroElt{
     public ArrayList<MethodInfo> methods = new ArrayList<>();
     public int nbLines;
     public int nbFields;
+    public Boolean isAlone = true;
 
     public String toString() {
       String str = "\t\t\tClass: " + this.name + ":\n";
@@ -57,9 +58,19 @@ public class ClassInfo extends Info implements DendroElt{
           }
           return null;
      }
+    
+	
+	public Boolean isAlone() {
+		return this.isAlone;
+	}
 
 	public Node createNode() {
 		// TODO Auto-generated method stub
 		return DendrogramPaintPanel.create(this.name);
+	}
+
+	public void setCoupled() {
+		// TODO Auto-generated method stub
+		this.isAlone = false;
 	}
   }

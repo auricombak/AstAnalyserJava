@@ -4,12 +4,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import Main.Parser;
 import info.AppInfo;
 import info.ClassInfo;
 
 import java.util.TreeMap;
-
-import visitor.Parser;
 
 public class DendroGenerator {
 	
@@ -18,10 +17,18 @@ public class DendroGenerator {
 	
 	public DendroGenerator(AppInfo app) {
 		this.matrice = new HashMap<>();
-		this.classes = app.getClasses();
+
+		//Pour réccupérer uniquement les classes couplées pour le calcul du dendrogramme
+		//Sinon faire juste : this.classes = app.getClasses();
+		classes = new ArrayList<>();
+		for(ClassInfo ci : app.getClasses()) {
+			if(!ci.isAlone()) {
+				classes.add(ci);
+			}
+		}
 	}
 	
-	//Ajoute un noeud au Dendro
+	//Ajoute un nouveau noeud au Dendro, et supprime ses fils de la matrice 
 	public void addNode(DendroNode node) {
 		
 		Double value = node.getWeight();
@@ -34,11 +41,9 @@ public class DendroGenerator {
 		for(Entry<DendroElt, HashMap<DendroElt, Double>> e : matrice.entrySet()) {
 			if(!e.getKey().equals(nodeL) && !e.getKey().equals(nodeR)) {
 				//La valeur du nouveau croisement du noeud avec e = au max de l'ancien croisement de left avec e et right avec e.
-				if(matrice.get(e.getKey()).get(nodeL) >= matrice.get(e.getKey()).get(nodeR)) {
-					value = matrice.get(e.getKey()).get(nodeL);
-				}else {
-					value = matrice.get(e.getKey()).get(nodeR);
-				}
+				
+					value = (matrice.get(e.getKey()).get(nodeL) + matrice.get(e.getKey()).get(nodeR)) /2;
+
 				hm.put(e.getKey(), value);
 				
 				//On ajoute à matrice[e, hmRet] ou hmRet = à toute les valeurs de e dans la matrice + le nouveau noeud.
@@ -48,9 +53,11 @@ public class DendroGenerator {
 				matrice.put(e.getKey(), hmRet);
 			}
 		}
+		
 		//On ajoute à matrice[node, hm] ou hm contient tout les tuple [e, value]]
 		matrice.put(node, hm);
 		
+		//On supprime les fils du nouveau noeud, puis tout les tuples (x,y) ou y coorespond à un fils du nouveau noeud
 		matrice.remove(nodeL);
 		matrice.remove(nodeR);
 		
@@ -62,11 +69,11 @@ public class DendroGenerator {
 					hmRetrieved.put(e2.getKey(), e2.getValue());
 				}
 			}
-			//matrice.remove(e.getKey());
 			matrice.put(e.getKey(), hmRetrieved);
 		}
 	}
 
+	//On réccupère le tuple ayant la valeur max puis on renvoie un nouveau noeud coorespondant à la concaténation de ce tuple
 	public DendroNode getMax() {
 		Double max = 0.0;
 		DendroElt left = null;
@@ -83,34 +90,34 @@ public class DendroGenerator {
 		return new DendroNode(left, right, max);
 	}
 	
+	//On ajoute à la matrice toutes les méthodes et pour chaque tuple de méthodes (x,y) sa valeur de couplage couplageClass(x,y)
 	public void init() {
-
 		for(int i = 0; i<this.classes.size(); i++) {
-			HashMap<DendroElt, Double> hm = new HashMap<>();
-			for(int j = 0; j<this.classes.size(); j++) {
-				if(i!=j) {
-					hm.put(classes.get(j), Parser.couplageClass(classes.get(i), classes.get(j)));
+			if(!classes.get(i).isAlone()) {
+				HashMap<DendroElt, Double> hm = new HashMap<>();
+				for(int j = 0; j<this.classes.size(); j++) {
+					if(i!=j) {
+						hm.put(classes.get(j), Parser.couplageClass(classes.get(i), classes.get(j)));
+					}
 				}
+				matrice.put(classes.get(i), hm);
 			}
-			matrice.put(classes.get(i), hm);
-		}
-		
-//		for(Entry <DendroElt, HashMap<DendroElt, Double>> en : matrice.entrySet() ) {
-//			for(Entry<DendroElt, Double> en2 : en.getValue().entrySet()) {
-//				System.out.println("[ " + en.getKey().getName() + " - " + en2.getKey().getName() + " : " + en2.getValue() + "]");
-//			}
-//		}
-		
+		}		
 	}
 	
+	
 	public void start() {
+		//On initialise la matrice avec les classes du programme
 		this.init();
+		
+		//Tant que la matrice ne contient pas le dernier élement on réccupère le max, on supprime ses enfants et on l'ajoute à la matrice
 		while(matrice.size()>1) {
 			DendroNode nodeMax = getMax();
 			this.addNode(nodeMax);
 		}
+		
+		//On lance l'affichage graphique du dendrogramme en lui passant le dernier element de la matrice  ( coorespondant au dendrogramme ) en paramètres 
 		DendrogramPaintTest dp = new DendrogramPaintTest();
-
 		for(Entry <DendroElt, HashMap<DendroElt, Double>> en : matrice.entrySet() ) {
 			dp.start((DendroNode)en.getKey());
 		}
