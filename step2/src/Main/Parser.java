@@ -74,6 +74,8 @@ public class Parser {
 	public static AppInfo app;
 	
 	public static ArrayList<MutableNode> callGraphVisit;
+	
+	public static String infosText = "";
 
 	public static void main(String[] args) throws IOException {
 		  // read java files
@@ -82,27 +84,35 @@ public class Parser {
 	    //print nbr of class, nbr of line, nbr of methods for the app
 	    app = (AppInfo) getInfo(root);
 
+	    
 	    //1. Nombre de classes de l’application.
 	    System.out.println("Nombre de classes: " + app.getNbClasses());
-
+	    infosText+="Nombre de classes: " + app.getNbClasses() + "\n\n";
+	    
 	    //2. Nombre de lignes de code de l’application.
 	    System.out.println("Nombre total de lignes de code: " + app.getLines());
+	    infosText+="Nombre total de lignes de code: " + app.getLines() + "\n\n";
 
 	    //3. Nombre total de méthodes de l’application.
 	    System.out.println("Nombre de méthodes: " + app.getNbMethods());
+	    infosText+="Nombre de méthodes: " + app.getNbMethods() + "\n\n";
 
 	    //4. Nombre total de packages de l’application.
 	    System.out.println("Nombre de packages: " + app.packages.size());
+	    infosText+="Nombre de packages: " + app.packages.size() + "\n\n";
 
 	    //5. Nombre moyen de méthodes par classe.
 	    System.out.println("Nombre moyen de méthodes par classe: " + ((float) app.getNbMethods()) / app.getNbClasses());
-
+	    infosText+="Nombre moyen de méthodes par classe: " + ((float) app.getNbMethods()) / app.getNbClasses() + "\n\n";
+	    
 	    //6. Nombre moyen de lignes de code par méthode.
 	    System.out.println("Nombre moyen de lignes de code par méthode: " + ((float) app.getLines()) / app.getNbMethods());
-
+	    infosText+="Nombre moyen de lignes de code par méthode: " + ((float) app.getLines()) / app.getNbMethods() + "\n\n";
+	    
 	    //7. Nombre moyen d’attributs par classe.
 	    System.out.println("Nombre moyen d'attributs par classe: " + ((float) app.getNbFields()) / app.getNbClasses());
-
+	    infosText+="Nombre moyen d'attributs par classe: " + ((float) app.getNbFields()) / app.getNbClasses() + "\n\n";
+	    
 	    //8. Les 10% des classes qui possèdent le plus grand nombre de méthodes.
 	    double percent = (double) app.getNbClasses() * 0.1;
 	    int i = 0;
@@ -113,10 +123,13 @@ public class Parser {
 	      i++;
 	    }
 	    System.out.print("10% de classes avec le plus de méthodes: ");
+	    infosText+="10% de classes avec le plus de méthodes: ";
 	    for (ClassInfo cls : topClassesByMethods) {
 	      System.out.print(cls.name + " | ");
+		  infosText+=cls.name + " | ";
 	    }
 	    System.out.println();
+	    infosText+="\n\n";
 
 	    //9. Les 10% des classes qui possèdent le plus grand nombre d’attributs.
 	    i = 0;
@@ -127,10 +140,19 @@ public class Parser {
 	      i++;
 	    }
 	    System.out.print("10% de classes avec le plus d'attributs: ");
+	    infosText+="10% de classes avec le plus d'attributs: \n";
+	    int a = 0;
 	    for (ClassInfo cls : topClassesByFields) {
 	      System.out.print(cls.name + " | ");
+	      if(a>5) {
+	  	    infosText+="\n";
+	  	    a=0;
+	      }
+		  infosText+=cls.name + " | ";
+		  a++;
 	    }
 	    System.out.println();
+	    infosText+="\n\n";
 
 	    //10. Les classes qui font partie en même temps des deux catégories précédentes.
 	    ArrayList<ClassInfo> winners = new ArrayList<>();
@@ -140,16 +162,34 @@ public class Parser {
 	      }
 	    }
 	    System.out.print("Classes qui appartiennent aux deux catégories: ");
+	    infosText+="Classes qui appartiennent aux deux catégories: \n";
+	    a=0;
 	    for (ClassInfo cls : winners) {
+		  if(a>5) {
+			infosText+="\n";
+			a=0;
+		  }
 	      System.out.print(cls.name + " | ");
+		  infosText+=cls.name + " | ";
+		  a++;
 	    }
 	    System.out.println();
+	    infosText+="\n\n";
 
 	    //11. Les classes qui possèdent plus de X méthodes (la valeur de X est donnée).
 	    System.out.print("Classes avec plus de 3 méthodes: ");
+	    infosText+="Classes avec plus de 3 méthodes: \n";
+	    a=0;
 	    for (ClassInfo cls : app.getClasses()) {
 	      System.out.print(cls.methods.size() > 3 ? cls.name + " | " : "");
+		  if(a>5) {
+			infosText+="\n";
+			a=0;
+		  }
+		  infosText+=cls.methods.size() > 3 ? cls.name + " | " : "";
+		  a++;
 	    }
+	    infosText+="\n\n";
 	    System.out.println();
 
 	    //12. Les 10% des méthodes qui possèdent le plus grand nombre de lignes de code (par classe).
@@ -162,9 +202,18 @@ public class Parser {
 	      i++;
 	    }
 	    System.out.print("10% de methodes avec le plus de paramètres: ");
+	    infosText+="10% de methodes avec le plus de paramètres: \n";
+	    a=0;
 	    for (MethodInfo meth : topMethodsByParameters) {
 	      System.out.print(meth.name + " | ");
+		  if(a>5) {
+			infosText+="\n";
+			a=0;
+		  }
+		  infosText+=meth.name + " | ";
+		  a++;
 	    }
+	    infosText+="\n\n";
 	    System.out.println();
 
 	    //13. Le nombre maximal de paramètres par rapport à toutes les méthodes de l’application.
@@ -175,7 +224,7 @@ public class Parser {
 	      }
 	    }
 	    System.out.print("Nombre maximal de paramètres dans une méthode: " + max + "\n\n");
-	       
+		infosText+="Nombre maximal de paramètres dans une méthode: " + max + "\n\n";
 	    //__________________________________________________________________________________________//
 	    
 	    //Affiche le Graphe d'appels du programme
@@ -198,7 +247,8 @@ public class Parser {
 	    //GUI interface;
 	    GuiInterface ihm = GuiInterface.getInstance();
 	    ihm.setDendroNode(dendrogram);
-	    ihm.setInfoText("Text");
+	    ihm.setInfoText(infosText);
+	    ihm.setCallGraph("dkje");
 	    ihm.start();
 	    
 	    System.out.println("END");
