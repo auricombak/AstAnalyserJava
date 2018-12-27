@@ -1,5 +1,7 @@
 package dendrogram;
 
+import ihm.DendrogramPaintPanel;
+
 public class DendroNode implements DendroElt{
 	private DendroElt leftChild;
 	private DendroElt rightChild;

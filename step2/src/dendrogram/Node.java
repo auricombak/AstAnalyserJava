@@ -10,14 +10,14 @@ public class Node<T>
     private final Double value;
     private final List<Node<T>> children;
 
-    Node(T contents)
+    public Node(T contents)
     {
         this.contents = contents;
         this.children = Collections.emptyList();
         this.value = null;
     }
 
-    Node(Node<T> child0, Node<T> child1, Double value)
+    public Node(Node<T> child0, Node<T> child1, Double value)
     {
         this.contents = null;
         this.value = value;

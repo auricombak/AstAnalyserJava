@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 import dendrogram.DendroGenerator;
+import dendrogram.DendroNode;
 import guru.nidi.graphviz.attribute.Color;
 import guru.nidi.graphviz.attribute.Label;
 import guru.nidi.graphviz.attribute.RankDir;
@@ -43,6 +44,7 @@ import guru.nidi.graphviz.model.Graph;
 import guru.nidi.graphviz.model.Link;
 import guru.nidi.graphviz.model.MutableGraph;
 import guru.nidi.graphviz.model.MutableNode;
+import ihm.GuiInterface;
 
 import static guru.nidi.graphviz.model.Factory.*;
 
@@ -190,7 +192,14 @@ public class Parser {
 	    
 	    //Génère un dendogramme
 	    DendroGenerator dg = new DendroGenerator(app);
-	    dg.start();
+	    DendroNode dendrogram = dg.start();
+	    
+	    
+	    //GUI interface;
+	    GuiInterface ihm = GuiInterface.getInstance();
+	    ihm.setDendroNode(dendrogram);
+	    ihm.setInfoText("Text");
+	    ihm.start();
 	    
 	    System.out.println("END");
 	    

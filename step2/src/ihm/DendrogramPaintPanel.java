@@ -1,4 +1,4 @@
-package dendrogram;
+package ihm;
 
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -6,6 +6,9 @@ import java.awt.Point;
 import java.util.List;
 
 import javax.swing.JPanel;
+
+import dendrogram.DendroNode;
+import dendrogram.Node;
 
 public class DendrogramPaintPanel extends JPanel
 {
@@ -27,7 +30,7 @@ public class DendrogramPaintPanel extends JPanel
     private int currentY;
     private final int margin = 25;
 
-    DendrogramPaintPanel(DendroNode node)
+    public DendrogramPaintPanel(DendroNode node)
     {
     	//From DendroNode, create Node and affect it to root
         root = node.createNode();

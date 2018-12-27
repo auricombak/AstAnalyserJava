@@ -106,7 +106,7 @@ public class DendroGenerator {
 	}
 	
 	
-	public void start() {
+	public DendroNode start() {
 		//On initialise la matrice avec les classes du programme
 		this.init();
 		
@@ -115,13 +115,13 @@ public class DendroGenerator {
 			DendroNode nodeMax = getMax();
 			this.addNode(nodeMax);
 		}
-		
+		DendroNode result = null;
 		//On lance l'affichage graphique du dendrogramme en lui passant le dernier element de la matrice  ( coorespondant au dendrogramme ) en paramètres 
-		DendrogramPaintTest dp = new DendrogramPaintTest();
 		for(Entry <DendroElt, HashMap<DendroElt, Double>> en : matrice.entrySet() ) {
-			dp.start((DendroNode)en.getKey());
+			result = (DendroNode)en.getKey();
 		}
 		
+		return result;
 	}
 	
 	
