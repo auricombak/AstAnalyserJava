@@ -1,6 +1,7 @@
 package ihm;
 
 import java.awt.BorderLayout;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -16,29 +17,26 @@ import javax.swing.SwingUtilities;
 
 import dendrogram.DendroNode;
 import dendrogram.Node;
+import parser.Parser;
 
 //Singleton
 public class GuiInterface{
 	
-	private static Boolean made = false;
-	private JPanel actualCenterPanel;
-	private JPanel newCenterPanel;
+	private static JPanel actualCenterPanel;
+	private static JPanel newCenterPanel;
 	
-	private JScrollPane callGraph;
-	private JScrollPane couplageGraph;
+	private static JScrollPane callGraph;
+	private static JScrollPane couplageGraph;
 	
-	private JPanel dendro;
-	private JPanel info;
+	private static JPanel dendro;
+	private static JPanel info;
 	
 	private static JFrame frame;
     
-	private GuiInterface() {
-		
-	}
+	private static String uriFolder;
 	
-    public void start() {
+    public static void start() {
 
-        frame = new MainFrame("Analyse programme");
 
         
         JTabbedPane tabbedPane = new JTabbedPane();
@@ -47,49 +45,72 @@ public class GuiInterface{
         tabbedPane.addTab("DendroGraph", dendro);
         tabbedPane.addTab("CallGraph", callGraph);
         tabbedPane.addTab("CouplageGraph", couplageGraph);
-        frame.add(tabbedPane);
+    	frame.add(tabbedPane, BorderLayout.CENTER);
+        SwingUtilities.updateComponentTreeUI(frame);
         //frame.setLayout(tabbedPane);
 
         
     }
     
-    
-	public static GuiInterface getInstance() {
-		if(!GuiInterface.made) {
-			GuiInterface.made = true;
-			GuiInterface.frame = new JFrame();
-			return new GuiInterface();
-		}
-		return null;
-	}
 	
     
-    public void setDendroNode(DendroNode node) {
+    public static void setDendroNode(DendroNode node) {
         DendrogramPaintPanel panelDendogram = new DendrogramPaintPanel(node);
-    	this.dendro = panelDendogram;
+    	dendro = panelDendogram;
     }
     
-    public void setInfoText(String text) {
+    public static void setInfoText(String text) {
         InfoPanel panelInfo = new InfoPanel(text);
-    	this.info = panelInfo;
+    	info = panelInfo;
     }
     
-    public void setCallGraph(String uri) {
+    public static void setCallGraph(String uri) {
         GraphPanel panelCall = new GraphPanel(uri);
         JScrollPane scrollPane = new JScrollPane(panelCall);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scrollPane.setBounds(50, 30, 300, 50);
-    	this.callGraph = scrollPane;
+    	callGraph = scrollPane;
     }
     
-    public void setCouplageGraph(String uri) {
+    public static void setCouplageGraph(String uri) {
         GraphPanel panelCall = new GraphPanel(uri);
         JScrollPane scrollPane = new JScrollPane(panelCall);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
         scrollPane.setBounds(50, 30, 300, 50);
-    	this.couplageGraph = scrollPane;
+    	couplageGraph = scrollPane;
     }
+    
+    public static void main(String[] args) throws IOException {
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+            	frame = new MainFrame("Analyse programme");
+            	JPanel folderP = new PickFolderPanel();
+            	frame.add(folderP, BorderLayout.PAGE_START);
+                frame.setVisible(true);
+            }
+      });
+    	
+
+    }
+    
+    //Appellé seulement si un dossier a été sélectionné
+    public static void prepare() throws IOException {
+    	Parser p = new Parser(uriFolder);
+    	p.generateCallGraph();
+    	p.generateCouplageGraph();
+    	
+	    setDendroNode(p.generateDendrogram());
+	    setInfoText(p.getInfoToDisplay());
+	    setCallGraph("file:./example/call_graph.svg");
+	    setCouplageGraph("file:./example/couplage_graph.svg");
+	    start();
+    }
+    
+    public static void setUri(String uri) {
+    	uriFolder= uri;
+    }
+    
 
 }

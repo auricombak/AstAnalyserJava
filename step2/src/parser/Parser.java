@@ -1,4 +1,4 @@
-package Main;
+package parser;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,7 +63,7 @@ public class Parser {
 	
 	//public static final String projectPath = "/home/oguerisck/Documents/Refactoring/AstAnalyserJava/step2";
 	//public static final String projectPath = "/auto_home/lfaidherbe/workspace/Patern_Slate";
-	public static final String projectPath = "/home/oguerisck/Bureau/Reutilisation/AstAnalyserJava/step2";
+	public static String projectPath = "/home/oguerisck/Bureau/Reutilisation/AstAnalyserJava/step2";
 
 	
 	public static final String projectSourcePath = projectPath + "/src";
@@ -74,17 +74,27 @@ public class Parser {
 	public static AppInfo app;
 	
 	public static ArrayList<MutableNode> callGraphVisit;
-	
-	public static String infosText = "";
 
-	public static void main(String[] args) throws IOException {
+	//Constructor
+	public Parser(String uri) throws IOException {
+		
+		projectPath = uri;
+		
 		  // read java files
 	    final File root = new File(projectSourcePath);
-
+	    
+	    	    
 	    //print nbr of class, nbr of line, nbr of methods for the app
 	    app = (AppInfo) getInfo(root);
+	}
+	
+	public DendroNode generateDendrogram() {
+		DendroGenerator dg = new DendroGenerator(app);
+		return dg.start();
+	}
 
-	    
+	public String getInfoToDisplay() {
+		String infosText = "";
 	    //1. Nombre de classes de l’application.
 	    System.out.println("Nombre de classes: " + app.getNbClasses());
 	    infosText+="Nombre de classes: " + app.getNbClasses() + "\n\n";
@@ -225,39 +235,9 @@ public class Parser {
 	    }
 	    System.out.print("Nombre maximal de paramètres dans une méthode: " + max + "\n\n");
 		infosText+="Nombre maximal de paramètres dans une méthode: " + max + "\n\n";
-	    //__________________________________________________________________________________________//
-	    
-	    //Affiche le Graphe d'appels du programme
-	    generateCallGraph();
-	    
-	    //Affiche les methodes pour une classes donnée, et pour une methode donnée les appels
-	    //displayMethodCall();
-
-	    //Pour deux classes données, calcule le couplage de celles-ci
-	    //getCouplage2Classes();
-
-	    //Génère un graphe de couplage pondéré
-	    generateCouplageGraph();
-	    
-	    //Génère un dendogramme
-	    DendroGenerator dg = new DendroGenerator(app);
-	    DendroNode dendrogram = dg.start();
-	    
-	    
-	    //GUI interface;
-	    GuiInterface ihm = GuiInterface.getInstance();
-	    ihm.setDendroNode(dendrogram);
-	    ihm.setInfoText(infosText);
-	    ihm.setCallGraph("file:./example/call_graph.svg");
-	    ihm.setCouplageGraph("file:./example/couplage_graph.svg");
-	    ihm.start();
-	    
-	    System.out.println("END");
-	    
-	    
-
+		
+		return infosText;
 	}
-
 	
 	public static void prepareCouplage() throws IOException {
 	    //Graphe d'appels du programme
@@ -492,18 +472,24 @@ public class Parser {
 		        if (!(type.isInterface())) {
 		          clsInfo.name = type.getName().toString();
 		          clsInfo.nbLines = type.toString().split("\n").length;
-		          for (MethodDeclaration meth : type.getMethods()) {
+		          for (MethodDeclaration meth : type.getMethods()) {		        	
 		            MethodInfo methodInfo = new MethodInfo();
 		            methodInfo.name = clsInfo.name + "." + meth.getName().toString();
 		            methodInfo.nbParameters = meth.parameters().size();
 		            methodInfo.nbLines = meth.getBody().toString().split("\n").length;
+		            
+		            //__________________TODO_______________________________
+		            
+		            //On ajoute la méthode appellé préfixé du nom de la classe l'appellant
 		            for(MethodInvocation inv: MethodInvocationVisitor.perform(meth)) {
-		              if(inv.resolveMethodBinding() != null) {		         
+		              if(inv.resolveMethodBinding() != null) {				            	  
 		            	  methodInfo.calledMethods.add(inv.resolveMethodBinding().getDeclaringClass().getName().toString() + "." + inv.getName().toString());
 		              }else{
 		            	  methodInfo.calledMethods.add(clsInfo.name +"."+ inv.getName().toString());
 		              }  
 		            }
+		            
+		            
 		            clsInfo.methods.add(methodInfo);
 		          }
 		          clsInfo.nbFields = type.getFields().length;

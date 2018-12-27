@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
-import Main.Parser;
 import info.AppInfo;
 import info.ClassInfo;
+import parser.Parser;
 
 import java.util.TreeMap;
 
