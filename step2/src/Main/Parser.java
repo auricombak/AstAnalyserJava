@@ -248,7 +248,8 @@ public class Parser {
 	    GuiInterface ihm = GuiInterface.getInstance();
 	    ihm.setDendroNode(dendrogram);
 	    ihm.setInfoText(infosText);
-	    ihm.setCallGraph("dkje");
+	    ihm.setCallGraph("file:./example/call_graph.svg");
+	    ihm.setCouplageGraph("file:./example/couplage_graph.svg");
 	    ihm.start();
 	    
 	    System.out.println("END");

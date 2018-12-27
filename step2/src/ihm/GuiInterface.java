@@ -9,6 +9,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -22,7 +23,9 @@ public class GuiInterface{
 	private static Boolean made = false;
 	private JPanel actualCenterPanel;
 	private JPanel newCenterPanel;
-	private JPanel callGraph;
+	
+	private JScrollPane callGraph;
+	private JScrollPane couplageGraph;
 	
 	private JPanel dendro;
 	private JPanel info;
@@ -34,7 +37,7 @@ public class GuiInterface{
 	}
 	
     public void start() {
-    	
+
         frame = new MainFrame("Analyse programme");
 
         
@@ -43,6 +46,7 @@ public class GuiInterface{
         tabbedPane.addTab("Infos", info);
         tabbedPane.addTab("DendroGraph", dendro);
         tabbedPane.addTab("CallGraph", callGraph);
+        tabbedPane.addTab("CouplageGraph", couplageGraph);
         frame.add(tabbedPane);
         //frame.setLayout(tabbedPane);
 
@@ -71,8 +75,21 @@ public class GuiInterface{
     }
     
     public void setCallGraph(String uri) {
-        CallGraphPanel panelCall = new CallGraphPanel();
-    	this.callGraph = panelCall;
+        GraphPanel panelCall = new GraphPanel(uri);
+        JScrollPane scrollPane = new JScrollPane(panelCall);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        scrollPane.setBounds(50, 30, 300, 50);
+    	this.callGraph = scrollPane;
+    }
+    
+    public void setCouplageGraph(String uri) {
+        GraphPanel panelCall = new GraphPanel(uri);
+        JScrollPane scrollPane = new JScrollPane(panelCall);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        scrollPane.setBounds(50, 30, 300, 50);
+    	this.couplageGraph = scrollPane;
     }
 
 }
