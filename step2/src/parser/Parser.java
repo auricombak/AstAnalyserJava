@@ -24,11 +24,14 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.PackageDeclaration;
+import org.eclipse.jdt.core.dom.SuperMethodInvocation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
@@ -481,14 +484,22 @@ public class Parser {
 		            //__________________TODO_______________________________
 		            
 		            //On ajoute la méthode appellé préfixé du nom de la classe l'appellant
+		            for(ClassInstanceCreation inv: MethodInvocationVisitor.newperform(meth)) {
+			              if(inv.resolveConstructorBinding() != null) {	
+			            	  System.out.println(inv.resolveConstructorBinding().getDeclaringClass().getName().toString() + "." + inv.resolveConstructorBinding().getName().toString());
+			            	  methodInfo.calledMethods.add(inv.resolveConstructorBinding().getDeclaringClass().getName().toString() + "." + inv.resolveConstructorBinding().getName().toString());
+			              } 
+		            }
 		            for(MethodInvocation inv: MethodInvocationVisitor.perform(meth)) {
 		              if(inv.resolveMethodBinding() != null) {				            	  
 		            	  methodInfo.calledMethods.add(inv.resolveMethodBinding().getDeclaringClass().getName().toString() + "." + inv.getName().toString());
-		              }else{
-		            	  methodInfo.calledMethods.add(clsInfo.name +"."+ inv.getName().toString());
 		              }  
 		            }
-		            
+	                for(SuperMethodInvocation inv: MethodInvocationVisitor.superPerform(meth)) {
+	                  if (inv.resolveMethodBinding() != null) {
+	                      methodInfo.calledMethods.add(inv.resolveMethodBinding().getDeclaringClass().getName().toString() + "." + inv.getName().toString());
+	                  }  		            			            	
+	                }
 		            
 		            clsInfo.methods.add(methodInfo);
 		          }

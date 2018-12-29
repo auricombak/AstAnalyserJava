@@ -3,10 +3,16 @@ package info;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.eclipse.jdt.core.dom.MethodInvocation;
+
 public class MethodInfo extends Info {
     public int nbLines;
     public int nbParameters;
     public ArrayList<String> calledMethods = new ArrayList<>();
+    public ArrayList<String> calledMethodsSignature = new ArrayList<>();
+    public ArrayList<MethodInfo> calledMethodInfos = new ArrayList<>();
+    
+    
     public HashMap<String, Integer> weightedCalls = new HashMap<String,Integer>();
 
     public String toString() {

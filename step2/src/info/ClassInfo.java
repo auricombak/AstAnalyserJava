@@ -57,7 +57,7 @@ public class ClassInfo extends Info implements DendroElt{
             }
           }
           return null;
-     }
+    }
     
 	
 	public Boolean isAlone() {
