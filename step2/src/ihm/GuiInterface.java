@@ -2,6 +2,7 @@ package ihm;
 
 import java.awt.BorderLayout;
 import java.io.IOException;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,6 +18,7 @@ import javax.swing.SwingUtilities;
 
 import dendrogram.DendroNode;
 import dendrogram.Node;
+import info.ClassInfo;
 import parser.Parser;
 
 //Singleton
@@ -30,6 +32,7 @@ public class GuiInterface{
 	
 	private static JPanel dendro;
 	private static JPanel info;
+	private static JPanel componants;
 	
 	private static JFrame frame;
     
@@ -45,6 +48,7 @@ public class GuiInterface{
         tabbedPane.addTab("DendroGraph", dendro);
         tabbedPane.addTab("CallGraph", callGraph);
         tabbedPane.addTab("CouplageGraph", couplageGraph);
+        tabbedPane.addTab("List Componants", componants);
     	frame.add(tabbedPane, BorderLayout.CENTER);
         SwingUtilities.updateComponentTreeUI(frame);
         //frame.setLayout(tabbedPane);
@@ -62,6 +66,11 @@ public class GuiInterface{
     public static void setInfoText(String text) {
         InfoPanel panelInfo = new InfoPanel(text);
     	info = panelInfo;
+    }
+    
+    public static void setComponantsText(String text) {
+        InfoPanel panelInfo = new InfoPanel(text);
+        componants = panelInfo;
     }
     
     public static void setCallGraph(String uri) {
@@ -95,16 +104,18 @@ public class GuiInterface{
 
     }
     
-    //Appellé seulement si un dossier a été sélectionné
+    //Appellé seulement si un dossier a été sélectionné dans l'interface graphique.
     public static void prepare() throws IOException {
     	Parser p = new Parser(uriFolder);
     	p.generateCallGraph();
     	p.generateCouplageGraph();
+    	DendroNode dn = p.generateDendrogram();
     	
 	    setDendroNode(p.generateDendrogram());
 	    setInfoText(p.getInfoToDisplay());
 	    setCallGraph("file:./example/call_graph.svg");
 	    setCouplageGraph("file:./example/couplage_graph.svg");
+	    setComponantsText(dn.calculateSubNodes());
 	    start();
     }
     
